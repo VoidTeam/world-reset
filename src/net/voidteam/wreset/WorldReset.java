@@ -23,6 +23,7 @@ public class WorldReset extends JavaPlugin {
     @Override
     public void onDisable() {
         super.onDisable();
+        getServer().getScheduler().cancelAllTasks();
     }
 
     @Override
@@ -38,6 +39,49 @@ public class WorldReset extends JavaPlugin {
         /**
          * Schedule the reset tasks.
          */
+        scheduleTasks();
+    }
+
+    /**
+     * It's only one command, so let me just nonchalantly shove this bad boy into the plugin class.
+     */
+    @Override
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (args.length == 0) {
+            sender.sendMessage("Used to unload, then save an archive, then delete, and finally create a new world with the same name.");
+        } else if (args.length == 1) {
+            /**
+             * Quick little permissions check, they must be an operator to use this command.
+             */
+            if (!sender.hasPermission("worldreset." + args[0])) {
+                sender.sendMessage(ChatColor.RED + "Sorry, you must be a server operator to run this command.");
+            } else {
+                if(args[0].equalsIgnoreCase("reload-config")) {
+                    reloadConfig();
+                    return true;
+                }
+
+                /**
+                 * Check if the world exists so we don't get a NullPointer, if it does then we just go ahead and run the
+                 * scheduler so it does not lock the main thread.
+                 */
+                if (!WorldReset.mvCore.getMVWorldManager().isMVWorld(args[0])) {
+                    sender.sendMessage(ChatColor.RED + "Sorry, but this world is not owned by Multiverse.");
+                } else if (!getConfig().getStringList("whitelistedWorlds").contains(args[0])) {
+                    sender.sendMessage(ChatColor.RED + "This world is protected and cannot be reset.");
+                } else {
+                    Bukkit.broadcastMessage(args[0] + " is being reset, please wait...");
+                    Bukkit.getScheduler().runTaskAsynchronously(this, new ResetTask(args[0], null));
+                }
+            }
+        } else {
+            return false;
+        }
+
+        return true;
+    }
+
+    private void scheduleTasks() {
         LinkedHashSet<String> scheduledKeys = (LinkedHashSet) getConfig().getConfigurationSection("scheduledWorlds").getKeys(false);
         for (String key : scheduledKeys) {
             List<Integer> days = getConfig().getIntegerList("scheduledWorlds." + key + ".scheduledDays");
@@ -94,39 +138,5 @@ public class WorldReset extends JavaPlugin {
                 }
             }
         }
-    }
-
-    /**
-     * It's only one command, so let me just nonchalantly shove this bad boy into the plugin class.
-     */
-    @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (args.length == 0) {
-            sender.sendMessage("Used to unload, then save an archive, then delete, and finally create a new world with the same name.");
-        } else if (args.length == 1) {
-            /**
-             * Quick little permissions check, they must be an operator to use this command.
-             */
-            if (!sender.hasPermission("worldreset." + args[0])) {
-                sender.sendMessage(ChatColor.RED + "Sorry, you must be a server operator to run this command.");
-            } else {
-                /**
-                 * Check if the world exists so we don't get a NullPointer, if it does then we just go ahead and run the
-                 * scheduler so it does not lock the main thread.
-                 */
-                if (!WorldReset.mvCore.getMVWorldManager().isMVWorld(args[0])) {
-                    sender.sendMessage(ChatColor.RED + "Sorry, but this world is not owned by Multiverse.");
-                } else if (!getConfig().getStringList("whitelistedWorlds").contains(args[0])) {
-                    sender.sendMessage(ChatColor.RED + "This world is protected and cannot be reset.");
-                } else {
-                    Bukkit.broadcastMessage(args[0] + " is being reset, please wait...");
-                    Bukkit.getScheduler().runTaskAsynchronously(this, new ResetTask(args[0], null));
-                }
-            }
-        } else {
-            return false;
-        }
-
-        return true;
     }
 }

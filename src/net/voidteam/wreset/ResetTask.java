@@ -33,7 +33,8 @@ public class ResetTask implements Runnable {
                     Bukkit.getScheduler().runTask(Bukkit.getPluginManager().getPlugin("WorldReset"), new Runnable() {
                         @Override
                         public void run() {
-                            final Location teleportLocation = WorldReset.mvCore.getMVWorldManager().getFirstSpawnWorld().getSpawnLocation();
+                            String teleportWorld = Bukkit.getPluginManager().getPlugin("WorldReset").getConfig().getString("scheduledWorlds." + worldName + ".teleportLocation");
+                            final Location teleportLocation = Bukkit.getWorld(teleportWorld).getSpawnLocation();
                             for (Player player : Bukkit.getWorld(worldName).getPlayers()) {
                                 player.teleport(teleportLocation);
                                 player.sendMessage("Sorry, but the world you were in is being reset.");
@@ -56,7 +57,7 @@ public class ResetTask implements Runnable {
                         /**
                          * Create the backup directories if they do not exist.
                          */
-                        File backupsDirectory = new File(String.format("plugins/WorldReset/archive/%s", worldName));
+                        File backupsDirectory = new File(String.format("plugins%sWorldReset%sarchive%s%s", File.separator, File.separator, File.separator, worldName));
 
                         if (!backupsDirectory.exists()) {
                             backupsDirectory.mkdirs();
@@ -67,7 +68,7 @@ public class ResetTask implements Runnable {
                          */
                         ZipDirectory.zipDirectory(
                                 String.format("%s", worldName), // Source directory
-                                String.format("%s/%s.zip", backupsDirectory.getPath(), new Date().toString()) // Target file
+                                String.format("%s%s%s.zip", backupsDirectory.getAbsolutePath(), File.separator, System.currentTimeMillis()) // Target file
                         );
                     } catch (IOException exception) {
                         exception.printStackTrace();
