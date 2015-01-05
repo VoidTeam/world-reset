@@ -1,0 +1,16 @@
+#
+# World Reset
+#  @author Robby Duke
+#  @date   01/04/2015
+#
+
+whitelistedWorlds:
+    - world
+
+scheduledWorlds:
+    miningWorld:
+      lastBackup:
+      scheduledDays:
+      - 15
+      - 20
+      - 25

@@ -1,0 +1,23 @@
+#
+# World Reset
+#  @author Robby Duke
+#  @date   01/04/2015
+#
+
+name: 'WorldReset'
+version: 1.8.1
+description: 'Unloads, deletes, backups, and creates a new world based on a scheduler.'
+
+author: 'Robby Duke'
+authors: ['NoEff3x', 'jacklink01']
+website: https://github.com/VoidTeam/world-reset
+
+main: net.voidteam.wreset.WorldReset
+database: false
+depend: ['Multiverse-Core']
+
+commands:
+  worldreset:
+    description: 'Used to unload, then save an archive, then delete, and finally create a new world with the same name.'
+    aliases: [wr]
+    usage: '/worldreset <worldName>'
